@@ -14,6 +14,7 @@ function WorldClock() {
         setTime(response.data.utc_datetime);
       } catch (error) {
         console.error("Error fetching time:", error);
+        setTime(null);
       }
     };
 

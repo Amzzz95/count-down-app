@@ -27,9 +27,14 @@ const CountdownTimer = ({ id, initialSeconds, timerName, onRemove }) => {
       id,
       activeTimeInSeconds: initialSeconds - seconds,
     };
-    const result = await axios.put(`${HOST_API}/counter`, updateObj);
-    setIsActive(false);
-    return result;
+    try {
+      const result = await axios.put(`${HOST_API}/counter`, updateObj);
+      setIsActive(false);
+      return result;
+    } catch (error) {
+      console.error("Error while updating counter", error);
+      setIsActive((prev) => prev);
+    }
   };
 
   const handleDelete = async () => {
@@ -38,10 +43,15 @@ const CountdownTimer = ({ id, initialSeconds, timerName, onRemove }) => {
       activeTimeInSeconds: initialSeconds - seconds,
       deletionDate: new Date(),
     };
-    const result = await axios.put(`${HOST_API}/counter`, updateObj);
-    setIsActive(false);
-    onRemove(id);
-    return result;
+    try {
+      const result = await axios.put(`${HOST_API}/counter`, updateObj);
+      setIsActive(false);
+      onRemove(id);
+      return result;
+    } catch (error) {
+      console.error("Error while updating counter", error);
+      setIsActive((prev) => prev);
+    }
   };
 
   // Calculate minutes and seconds
@@ -75,13 +85,18 @@ const StopwatchManager = () => {
       timerName,
       timerValue: initialSeconds,
     };
-    const {
-      data: { data: id },
-    } = await axios.post(`${HOST_API}/counter`, addObj);
-    setTimers([
-      ...timers,
-      { id, seconds: parseInt(initialSeconds), timerName },
-    ]);
+    try {
+      const {
+        data: { data: id },
+      } = await axios.post(`${HOST_API}/counter`, addObj);
+      setTimers([
+        ...timers,
+        { id, seconds: parseInt(initialSeconds), timerName },
+      ]);
+    } catch (error) {
+      console.error("Error while adding countdown timer", error);
+      setTimers((prev) => prev);
+    }
     setTimerName("");
     setInitialSeconds("");
   };

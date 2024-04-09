@@ -16,8 +16,13 @@ const CountdownTimerListing = () => {
 
   useEffect(() => {
     const fetchAllCountDowns = async () => {
-      const allCountDowns = await axios.get(`${HOST_API}/counter`);
-      setCountDowns(allCountDowns.data.data);
+      try {
+        const allCountDowns = await axios.get(`${HOST_API}/counter`);
+        setCountDowns(allCountDowns.data.data);
+      } catch (err) {
+        console.error("error in fetching counter listing");
+        setCountDowns([]);
+      }
     };
     fetchAllCountDowns();
   }, []);
