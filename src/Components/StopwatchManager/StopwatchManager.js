@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const HOST_API = "http://localhost:8000";
+import API_URL from "../../Constant/constant";
+
+const { HOST_API } = API_URL;
+
 const CountdownTimer = ({ id, initialSeconds, timerName, onRemove }) => {
   const [seconds, setSeconds] = useState(initialSeconds);
   const [isActive, setIsActive] = useState(false);

@@ -9,8 +9,10 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 import WorldClock from "../WorldClock";
+import API_URL from "../../Constant/constant";
 
-const HOST_API = "http://localhost:8000";
+const { HOST_API } = API_URL;
+
 const CountdownTimerListing = () => {
   const [countdowns, setCountDowns] = useState([]);
 

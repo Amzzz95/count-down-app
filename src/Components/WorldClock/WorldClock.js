@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const HOST_API = "http://worldtimeapi.org/api/timezone";
+import API_URL from "../../Constant/constant";
+
+const { WORLD_CLOCK_API } = API_URL;
+
 function WorldClock() {
   const [time, setTime] = useState(null);
   const [selectedTimeZone, setSelectedTimeZone] = useState("Asia/Kolkata"); // Default to IST
@@ -10,7 +13,9 @@ function WorldClock() {
     // Function to fetch time from the Internet time API
     const fetchTime = async () => {
       try {
-        const response = await axios.get(`${HOST_API}/${selectedTimeZone}`);
+        const response = await axios.get(
+          `${WORLD_CLOCK_API}/${selectedTimeZone}`
+        );
         setTime(response.data.utc_datetime);
       } catch (error) {
         console.error("Error fetching time:", error);
