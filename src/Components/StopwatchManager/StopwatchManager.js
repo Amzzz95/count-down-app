@@ -31,8 +31,8 @@ const CountdownTimer = ({ id, initialSeconds, timerName, onRemove }) => {
       activeTimeInSeconds: initialSeconds - seconds,
     };
     try {
-      const result = await axios.put(`${HOST_API}/counter`, updateObj);
       setIsActive(false);
+      const result = await axios.put(`${HOST_API}/counter`, updateObj);
       return result;
     } catch (error) {
       console.error("Error while updating counter", error);
@@ -47,10 +47,9 @@ const CountdownTimer = ({ id, initialSeconds, timerName, onRemove }) => {
       deletionDate: new Date(),
     };
     try {
-      const result = await axios.put(`${HOST_API}/counter`, updateObj);
       setIsActive(false);
+      await axios.put(`${HOST_API}/counter`, updateObj);
       onRemove(id);
-      return result;
     } catch (error) {
       console.error("Error while updating counter", error);
       setIsActive((prev) => prev);
@@ -67,10 +66,11 @@ const CountdownTimer = ({ id, initialSeconds, timerName, onRemove }) => {
         {timerName}&nbsp;
         {minutes}:
         {remainingSeconds < 10 ? `0${remainingSeconds}` : remainingSeconds}
+        &nbsp;
+        <button onClick={handleStart}>Start</button>&nbsp;
+        <button onClick={handleStop}>Stop</button>&nbsp;
+        <button onClick={handleDelete}>Delete</button>
       </div>
-      <button onClick={handleStart}>Start</button>
-      <button onClick={handleStop}>Stop</button>
-      <button onClick={handleDelete}>Delete</button>
     </div>
   );
 };
@@ -111,28 +111,31 @@ const StopwatchManager = () => {
   return (
     <div>
       <h1>Stopwatch Manager</h1>
-      <input
-        name="stopwatchTimer"
-        value={initialSeconds}
-        onChange={(e) => {
-          const value = parseInt(e.target.value);
-          setInitialSeconds(isNaN(value) ? 0 : value);
-        }}
-        placeholder="Enter time in seconds"
-        type="number"
-        min="0"
-      />
-      <input
-        name="stopwatchName"
-        value={timerName}
-        onChange={(e) => {
-          const value = e.target.value;
-          setTimerName(value);
-        }}
-        placeholder="Enter timer name"
-        type="text"
-      />
-      <button onClick={handleAddTimer}>Add Timer</button>
+      <div className="stopwatch-manager">
+        <input
+          name="stopwatchTimer"
+          value={initialSeconds}
+          onChange={(e) => {
+            const value = parseInt(e.target.value);
+            setInitialSeconds(isNaN(value) ? 0 : value);
+          }}
+          placeholder="Enter time in seconds"
+          type="number"
+          min="0"
+        />
+        <input
+          name="stopwatchName"
+          value={timerName}
+          onChange={(e) => {
+            const value = e.target.value;
+            setTimerName(value);
+          }}
+          placeholder="Enter timer name"
+          type="text"
+        />
+        <button onClick={handleAddTimer}>Add Timer</button> (
+        <a href="/countdown-list">View all Countdowns</a>)
+      </div>
       {timers.map((timer, idx) => (
         <CountdownTimer
           key={idx}

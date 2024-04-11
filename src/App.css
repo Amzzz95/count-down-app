@@ -1,3 +1,11 @@
+input {
+  margin-right: 10px;
+}
+
+.stopwatch-manager {
+  margin: 10px;
+}
+
 .App {
   text-align: center;
 }
