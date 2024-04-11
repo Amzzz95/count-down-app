@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 import API_URL from "../../Constant/constant";
+import { formatDate } from "../../Utils/helper";
 
 const { WORLD_CLOCK_API } = API_URL;
 
@@ -38,14 +39,6 @@ function WorldClock() {
     setSelectedTimeZone(newTimeZone);
   };
 
-  const formattedDateToShow = () => {
-    const date = new Date(time).toLocaleString("en-US", {
-      timeZone: selectedTimeZone,
-    });
-
-    return date;
-  };
-
   return (
     <div>
       <h1>Internet Time Display</h1>
@@ -58,7 +51,7 @@ function WorldClock() {
         <option value="Asia/Kolkata">IST</option>
         <option value="America/Los_Angeles">PST</option>
       </select>
-      {time && <p>Current Time: {formattedDateToShow()}</p>}
+      {time && <p>Current Time: {formatDate(time)}</p>}
     </div>
   );
 }

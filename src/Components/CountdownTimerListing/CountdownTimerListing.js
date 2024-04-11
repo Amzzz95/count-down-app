@@ -10,6 +10,7 @@ import axios from "axios";
 
 import WorldClock from "../WorldClock";
 import API_URL from "../../Constant/constant";
+import { formatDate } from "../../Utils/helper";
 
 const { HOST_API } = API_URL;
 
@@ -54,7 +55,7 @@ const CountdownTimerListing = () => {
                   {countdown.activeDuration || 0}
                 </TableCell>
                 <TableCell align="right">
-                  {countdown.deleteDate || "NA"}
+                  {formatDate(countdown.deleteDate) || "NA"}
                 </TableCell>
               </TableRow>
             ))}
