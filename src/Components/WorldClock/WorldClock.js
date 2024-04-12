@@ -51,7 +51,7 @@ function WorldClock() {
         <option value="Asia/Kolkata">IST</option>
         <option value="America/Los_Angeles">PST</option>
       </select>
-      {time && <p>Current Time: {formatDate(time)}</p>}
+      {time && <p>Current Time: {formatDate(time, selectedTimeZone)}</p>}
     </div>
   );
 }

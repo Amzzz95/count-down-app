@@ -55,7 +55,7 @@ const CountdownTimerListing = () => {
                   {countdown.activeDuration || 0}
                 </TableCell>
                 <TableCell align="right">
-                  {formatDate(countdown.deleteDate) || "NA"}
+                  {formatDate(countdown.deleteDate, "Asia/Kolkata") || "NA"}
                 </TableCell>
               </TableRow>
             ))}

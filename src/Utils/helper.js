@@ -1,11 +1,11 @@
-export const formatDate = (dateToFormat) => {
-  if (!dateToFormat) {
+export const formatDate = (dateToFormat, timeZone) => {
+  if (!dateToFormat || !timeZone) {
     return null;
   }
 
   try {
     const formattedDate = new Date(dateToFormat).toLocaleString("en-US", {
-      timeZone: "Asia/Kolkata",
+      timeZone,
     });
     return formattedDate;
   } catch (dateError) {
