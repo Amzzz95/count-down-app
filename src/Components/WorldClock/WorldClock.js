@@ -26,13 +26,25 @@ function WorldClock() {
 
     // Fetch time initially
     fetchTime();
+  }, [selectedTimeZone]);
 
+  useEffect(() => {
     // Update time every second
-    const intervalId = setInterval(fetchTime, 1000);
+    let localTime = null;
+    const intervalId = setInterval(() => {
+      localTime = time;
+      if (!localTime) {
+        return null;
+      }
+      const newDate = new Date(localTime);
+      newDate.setSeconds(newDate.getSeconds() + 1);
+      localTime = newDate.toISOString();
+      setTime(localTime);
+    }, 1000);
 
     // Clear interval on component unmount
     return () => clearInterval(intervalId);
-  }, [selectedTimeZone]);
+  }, [time]);
 
   const handleTimeZoneChange = async (event) => {
     const newTimeZone = event.target.value;

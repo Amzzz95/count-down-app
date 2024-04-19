@@ -5,7 +5,14 @@ import API_URL from "../../Constant/constant";
 
 const { HOST_API } = API_URL;
 
-const CountdownTimer = ({ id, initialSeconds, timerName, onRemove }) => {
+const CountdownTimer = ({
+  id,
+  initialSeconds,
+  timerName,
+  onRemove,
+  setLoading,
+  timeElapsedFromBeginning,
+}) => {
   const [seconds, setSeconds] = useState(initialSeconds);
   const [isActive, setIsActive] = useState(false);
 
@@ -26,27 +33,32 @@ const CountdownTimer = ({ id, initialSeconds, timerName, onRemove }) => {
   };
 
   const handleStop = async () => {
+    if (parseInt(seconds) === 0) {
+      return;
+    }
     const updateObj = {
       id,
-      activeTimeInSeconds: initialSeconds - seconds,
+      activeTimeInSeconds: initialSeconds - seconds + timeElapsedFromBeginning,
     };
     try {
+      setLoading(true);
       setIsActive(false);
-      const result = await axios.put(`${HOST_API}/counter`, updateObj);
-      return result;
+      await axios.put(`${HOST_API}/counter`, updateObj);
     } catch (error) {
       console.error("Error while updating counter", error);
       setIsActive((prev) => prev);
     }
+    setLoading(false);
   };
 
   const handleDelete = async () => {
     const updateObj = {
       id,
-      activeTimeInSeconds: initialSeconds - seconds,
+      activeTimeInSeconds: initialSeconds - seconds + timeElapsedFromBeginning,
       deletionDate: new Date(),
     };
     try {
+      setLoading(true);
       setIsActive(false);
       await axios.put(`${HOST_API}/counter`, updateObj);
       onRemove(id);
@@ -54,6 +66,7 @@ const CountdownTimer = ({ id, initialSeconds, timerName, onRemove }) => {
       console.error("Error while updating counter", error);
       setIsActive((prev) => prev);
     }
+    setLoading(false);
   };
 
   // Calculate minutes and seconds
@@ -63,13 +76,22 @@ const CountdownTimer = ({ id, initialSeconds, timerName, onRemove }) => {
   return (
     <div>
       <div>
-        {timerName}&nbsp;
-        {minutes}:
-        {remainingSeconds < 10 ? `0${remainingSeconds}` : remainingSeconds}
-        &nbsp;
-        <button onClick={handleStart}>Start</button>&nbsp;
-        <button onClick={handleStop}>Stop</button>&nbsp;
-        <button onClick={handleDelete}>Delete</button>
+        <div className="timer-container">
+          <div className="container">
+            <div className="item">{timerName}</div>
+            <div className="item">
+              {minutes}:
+              {remainingSeconds < 10
+                ? `0${remainingSeconds}`
+                : remainingSeconds}
+            </div>
+            <div className="item">
+              <button onClick={handleStart}>Start</button>&nbsp;
+              <button onClick={handleStop}>Stop</button>&nbsp;
+              <button onClick={handleDelete}>Delete</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -79,6 +101,38 @@ const StopwatchManager = () => {
   const [timers, setTimers] = useState([]);
   const [initialSeconds, setInitialSeconds] = useState("");
   const [timerName, setTimerName] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchAllCountDowns = async () => {
+      try {
+        setLoading(true);
+        const allCountDowns = await axios.get(`${HOST_API}/active-counter`);
+        setTimers(
+          allCountDowns?.data?.data?.map((countDown) => {
+            const {
+              _id: id,
+              timerName,
+              timerValue,
+              activeDuration,
+            } = countDown;
+            return {
+              id,
+              timerName,
+              seconds: parseInt(
+                timerValue - (activeDuration ? activeDuration : 0)
+              ),
+              timeElapsedFromBeginning: activeDuration,
+            };
+          })
+        );
+      } catch (err) {
+        console.error("error in fetching counter listing");
+      }
+      setLoading(false);
+    };
+    fetchAllCountDowns();
+  }, []);
 
   const handleAddTimer = async () => {
     if (timerName.trim === "" || !initialSeconds || initialSeconds <= 0) {
@@ -89,28 +143,36 @@ const StopwatchManager = () => {
       timerValue: initialSeconds,
     };
     try {
+      setLoading(true);
       const {
         data: { data: id },
       } = await axios.post(`${HOST_API}/counter`, addObj);
-      setTimers([
-        ...timers,
-        { id, seconds: parseInt(initialSeconds), timerName },
-      ]);
+      setTimers((prevTimer) => {
+        return [
+          ...prevTimer,
+          { id, seconds: parseInt(initialSeconds), timerName },
+        ];
+      });
     } catch (error) {
       console.error("Error while adding countdown timer", error);
       setTimers((prev) => prev);
     }
+    setLoading(false);
     setTimerName("");
     setInitialSeconds("");
   };
 
   const handleRemoveTimer = (timerId) => {
-    setTimers(timers.filter((timer) => timer.id !== timerId));
+    setTimers((prevTimer) => prevTimer.filter((timer) => timer.id !== timerId));
   };
-
   return (
     <div>
       <h1>Stopwatch Manager</h1>
+      {loading && (
+        <div className="overlay">
+          <div className="spinner"></div>
+        </div>
+      )}
       <div className="stopwatch-manager">
         <input
           name="stopwatchTimer"
@@ -133,8 +195,7 @@ const StopwatchManager = () => {
           placeholder="Enter timer name"
           type="text"
         />
-        <button onClick={handleAddTimer}>Add Timer</button> (
-        <a href="/countdown-list">View all Countdowns</a>)
+        <button onClick={handleAddTimer}>Add Timer</button>
       </div>
       {timers.map((timer, idx) => (
         <CountdownTimer
@@ -142,7 +203,9 @@ const StopwatchManager = () => {
           id={timer.id}
           initialSeconds={timer.seconds}
           timerName={timer.timerName}
-          onRemove={() => handleRemoveTimer(timer.id)}
+          timeElapsedFromBeginning={timer.timeElapsedFromBeginning || 0}
+          onRemove={(id) => handleRemoveTimer(id)}
+          setLoading={(isLoading) => setLoading(isLoading)}
         />
       ))}
     </div>

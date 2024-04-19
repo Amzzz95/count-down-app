@@ -16,16 +16,19 @@ const { HOST_API } = API_URL;
 
 const CountdownTimerListing = () => {
   const [countdowns, setCountDowns] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchAllCountDowns = async () => {
       try {
+        setLoading(true);
         const allCountDowns = await axios.get(`${HOST_API}/counter`);
         setCountDowns(allCountDowns.data.data);
       } catch (err) {
         console.error("error in fetching counter listing");
         setCountDowns([]);
       }
+      setLoading(false);
     };
     fetchAllCountDowns();
   }, []);
@@ -33,7 +36,12 @@ const CountdownTimerListing = () => {
   return (
     <div style={{ padding: 20 }}>
       <WorldClock />
-      <h1>Countdown Listing</h1>
+      <h1>Countdown History</h1>
+      {loading && (
+        <div className="overlay">
+          <div className="spinner"></div>
+        </div>
+      )}
       <TableContainer component={Paper}>
         <Table aria-label="simple table">
           <TableHead>
