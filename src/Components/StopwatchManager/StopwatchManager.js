@@ -17,6 +17,10 @@ const CountdownTimer = ({
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
+    setSeconds(initialSeconds);
+  }, [initialSeconds]);
+
+  useEffect(() => {
     let intervalId;
 
     if (isActive && seconds > 0) {
@@ -149,8 +153,8 @@ const StopwatchManager = () => {
       } = await axios.post(`${HOST_API}/counter`, addObj);
       setTimers((prevTimer) => {
         return [
-          ...prevTimer,
           { id, seconds: parseInt(initialSeconds), timerName },
+          ...prevTimer,
         ];
       });
     } catch (error) {
