@@ -5,16 +5,18 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 
 import WorldClock from "../WorldClock";
 import API_URL from "../../Constant/constant";
 import { formatDate } from "../../Utils/helper";
+import { MyContext } from "../../Context/Context";
 
 const { HOST_API } = API_URL;
 
 const CountdownTimerListing = () => {
+  const { showError } = useContext(MyContext);
   const [countdowns, setCountDowns] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -25,13 +27,14 @@ const CountdownTimerListing = () => {
         const allCountDowns = await axios.get(`${HOST_API}/counter`);
         setCountDowns(allCountDowns.data.data);
       } catch (err) {
-        console.error("error in fetching counter listing");
+        showError("Error in fetching data for counter listing");
+        console.error("Error in fetching data for counter listing", err);
         setCountDowns([]);
       }
       setLoading(false);
     };
     fetchAllCountDowns();
-  }, []);
+  }, [showError]);
 
   return (
     <div style={{ padding: 20 }}>

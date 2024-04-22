@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 
-import API_URL from "../../Constant/constant";
+import constant from "../../Constant/constant";
 import { formatDate } from "../../Utils/helper";
+import { MyContext } from "../../Context/Context";
 
-const { WORLD_CLOCK_API } = API_URL;
+const { WORLD_CLOCK_API, TIME_ZONE_OPTIONS } = constant;
 
 function WorldClock() {
+  const { showError } = useContext(MyContext);
   const [time, setTime] = useState(null);
   const [selectedTimeZone, setSelectedTimeZone] = useState("Asia/Kolkata"); // Default to IST
 
@@ -19,14 +21,21 @@ function WorldClock() {
         );
         setTime(response.data.utc_datetime);
       } catch (error) {
-        console.error("Error fetching time:", error);
+        const timeZoneOption = TIME_ZONE_OPTIONS.find(
+          (timeZone) => timeZone.timeZoneValue === selectedTimeZone
+        );
+        showError(`Error fetching time for ${timeZoneOption?.timeZone} zone`);
+        console.error(
+          `Error fetching time for ${timeZoneOption?.timeZone} zone`,
+          error
+        );
         setTime(null);
       }
     };
 
     // Fetch time initially
     fetchTime();
-  }, [selectedTimeZone]);
+  }, [selectedTimeZone, showError]);
 
   useEffect(() => {
     // Update time every second
@@ -60,8 +69,13 @@ function WorldClock() {
         value={selectedTimeZone}
         onChange={handleTimeZoneChange}
       >
-        <option value="Asia/Kolkata">IST</option>
-        <option value="America/Los_Angeles">PST</option>
+        {TIME_ZONE_OPTIONS.map((timeZoneOption) => {
+          return (
+            <option value={timeZoneOption.timeZoneValue}>
+              {timeZoneOption.timeZone}
+            </option>
+          );
+        })}
       </select>
       {time && <p>Current Time: {formatDate(time, selectedTimeZone)}</p>}
     </div>

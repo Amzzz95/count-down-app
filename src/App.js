@@ -1,9 +1,19 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 
 import "./App.css";
 import AppRoutes from "./Routes/Routes";
+import { MyContext } from "./Context/Context";
 
 const App = () => {
+  const [errorMessage, setErrorMessage] = useState(false);
+  const showError = useCallback((message) => {
+    setErrorMessage(message);
+  }, []);
+
+  const closeError = () => {
+    setErrorMessage("");
+  };
+
   return (
     <div className="App">
       <div class="menu-bar">
@@ -16,7 +26,20 @@ const App = () => {
           </li>
         </ul>
       </div>
-      <AppRoutes />
+      {errorMessage && (
+        <div className="error-overlay">
+          <div className="error-popup">
+            <div className="error-message">{errorMessage}</div>
+            <button className="close-button" onClick={closeError}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      <MyContext.Provider value={{ showError }}>
+        <AppRoutes />
+      </MyContext.Provider>
     </div>
   );
 };

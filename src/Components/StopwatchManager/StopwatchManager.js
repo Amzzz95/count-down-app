@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 
 import API_URL from "../../Constant/constant";
+import { MyContext } from "../../Context/Context";
 
 const { HOST_API } = API_URL;
 
@@ -13,6 +14,7 @@ const CountdownTimer = ({
   setLoading,
   timeElapsedFromBeginning,
 }) => {
+  const { showError } = useContext(MyContext);
   const [seconds, setSeconds] = useState(initialSeconds);
   const [isActive, setIsActive] = useState(false);
 
@@ -49,7 +51,8 @@ const CountdownTimer = ({
       setIsActive(false);
       await axios.put(`${HOST_API}/counter`, updateObj);
     } catch (error) {
-      console.error("Error while updating counter", error);
+      showError("Error while stopping counter");
+      console.error("Error while stopping counter", error);
       setIsActive((prev) => prev);
     }
     setLoading(false);
@@ -67,7 +70,8 @@ const CountdownTimer = ({
       await axios.put(`${HOST_API}/counter`, updateObj);
       onRemove(id);
     } catch (error) {
-      console.error("Error while updating counter", error);
+      showError("Error while deleting counter");
+      console.error("Error while deleting counter", error);
       setIsActive((prev) => prev);
     }
     setLoading(false);
@@ -102,6 +106,7 @@ const CountdownTimer = ({
 };
 
 const StopwatchManager = () => {
+  const { showError } = useContext(MyContext);
   const [timers, setTimers] = useState([]);
   const [initialSeconds, setInitialSeconds] = useState("");
   const [timerName, setTimerName] = useState("");
@@ -131,12 +136,13 @@ const StopwatchManager = () => {
           })
         );
       } catch (err) {
-        console.error("error in fetching counter listing");
+        showError("error in fetching counter listing");
+        console.error("error in fetching counter listing", err);
       }
       setLoading(false);
     };
     fetchAllCountDowns();
-  }, []);
+  }, [showError]);
 
   const handleAddTimer = async () => {
     if (timerName.trim === "" || !initialSeconds || initialSeconds <= 0) {
@@ -158,6 +164,7 @@ const StopwatchManager = () => {
         ];
       });
     } catch (error) {
+      showError("Error while adding countdown timer");
       console.error("Error while adding countdown timer", error);
       setTimers((prev) => prev);
     }
