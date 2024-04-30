@@ -119,6 +119,7 @@ const StopwatchManager = () => {
   const [timers, setTimers] = useState([]);
   const [initialSeconds, setInitialSeconds] = useState("");
   const [timerName, setTimerName] = useState("");
+  const [loading, setLoading] = useState(false);
   const [counterNetworkState, counterData] = useAxios(
     {
       method: "get",
@@ -161,6 +162,7 @@ const StopwatchManager = () => {
       timerValue: initialSeconds,
     };
     try {
+      setLoading(true);
       const {
         data: { data: id },
       } = await axios.post(`${HOST_API}/counter`, addObj);
@@ -174,6 +176,7 @@ const StopwatchManager = () => {
       showError("Error while adding countdown timer");
       console.error("Error while adding countdown timer", error);
     }
+    setLoading(false);
     setTimerName("");
     setInitialSeconds("");
   };
@@ -184,7 +187,7 @@ const StopwatchManager = () => {
   return (
     <div>
       <h1>Stopwatch Manager</h1>
-      {counterNetworkState === "loading" && (
+      {(counterNetworkState === "loading" || loading) && (
         <div className="overlay">
           <div className="spinner"></div>
         </div>
