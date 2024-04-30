@@ -1,5 +1,5 @@
 export default Object.freeze({
-  HOST_API: "https://gentle-sierra-64572-6b22d40bb338.herokuapp.com",
+  HOST_API: process.env.REACT_APP_HOST_API,
   WORLD_CLOCK_API: "https://worldtimeapi.org/api/timezone",
   TIME_ZONE_OPTIONS: [
     {

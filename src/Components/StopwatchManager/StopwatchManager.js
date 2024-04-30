@@ -4,6 +4,8 @@ import axios from "axios";
 import API_URL from "../../Constant/constant";
 import { MyContext } from "../../Context/Context";
 
+import useAxios from "../../Hooks/useAxios";
+
 const { HOST_API } = API_URL;
 
 const CountdownTimer = ({
@@ -11,12 +13,29 @@ const CountdownTimer = ({
   initialSeconds,
   timerName,
   onRemove,
-  setLoading,
   timeElapsedFromBeginning,
 }) => {
   const { showError } = useContext(MyContext);
   const [seconds, setSeconds] = useState(initialSeconds);
   const [isActive, setIsActive] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(false);
+  const updateObj = {
+    id,
+    activeTimeInSeconds: initialSeconds - seconds + timeElapsedFromBeginning,
+  };
+  const [counterNetworkState] = useAxios(
+    {
+      method: "put",
+      apiUrl: `${HOST_API}/counter`,
+      body: updateObj,
+    },
+    {
+      isEnabled,
+      onSuccess: () => {
+        setIsEnabled(false);
+      },
+    }
+  );
 
   useEffect(() => {
     setSeconds(initialSeconds);
@@ -42,20 +61,8 @@ const CountdownTimer = ({
     if (parseInt(seconds) === 0) {
       return;
     }
-    const updateObj = {
-      id,
-      activeTimeInSeconds: initialSeconds - seconds + timeElapsedFromBeginning,
-    };
-    try {
-      setLoading(true);
-      setIsActive(false);
-      await axios.put(`${HOST_API}/counter`, updateObj);
-    } catch (error) {
-      showError("Error while stopping counter");
-      console.error("Error while stopping counter", error);
-      setIsActive((prev) => prev);
-    }
-    setLoading(false);
+    setIsEnabled(true);
+    setIsActive(false);
   };
 
   const handleDelete = async () => {
@@ -65,16 +72,13 @@ const CountdownTimer = ({
       deletionDate: new Date(),
     };
     try {
-      setLoading(true);
       setIsActive(false);
       await axios.put(`${HOST_API}/counter`, updateObj);
       onRemove(id);
     } catch (error) {
       showError("Error while deleting counter");
       console.error("Error while deleting counter", error);
-      setIsActive((prev) => prev);
     }
-    setLoading(false);
   };
 
   // Calculate minutes and seconds
@@ -84,6 +88,11 @@ const CountdownTimer = ({
   return (
     <div>
       <div>
+        {counterNetworkState === "loading" && (
+          <div className="overlay">
+            <div className="spinner"></div>
+          </div>
+        )}
         <div className="timer-container">
           <div className="container">
             <div className="item">{timerName}</div>
@@ -110,15 +119,15 @@ const StopwatchManager = () => {
   const [timers, setTimers] = useState([]);
   const [initialSeconds, setInitialSeconds] = useState("");
   const [timerName, setTimerName] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchAllCountDowns = async () => {
-      try {
-        setLoading(true);
-        const allCountDowns = await axios.get(`${HOST_API}/active-counter`);
+  const [counterNetworkState, counterData] = useAxios(
+    {
+      method: "get",
+      apiUrl: `${HOST_API}/active-counter`,
+    },
+    {
+      onSuccess: (data) => {
         setTimers(
-          allCountDowns?.data?.data?.map((countDown) => {
+          data.data?.map((countDown) => {
             const {
               _id: id,
               timerName,
@@ -135,14 +144,13 @@ const StopwatchManager = () => {
             };
           })
         );
-      } catch (err) {
+      },
+      onError: (error) => {
         showError("error in fetching counter listing");
-        console.error("error in fetching counter listing", err);
-      }
-      setLoading(false);
-    };
-    fetchAllCountDowns();
-  }, [showError]);
+        console.error("error in fetching counter listing", error);
+      },
+    }
+  );
 
   const handleAddTimer = async () => {
     if (timerName.trim === "" || !initialSeconds || initialSeconds <= 0) {
@@ -153,7 +161,6 @@ const StopwatchManager = () => {
       timerValue: initialSeconds,
     };
     try {
-      setLoading(true);
       const {
         data: { data: id },
       } = await axios.post(`${HOST_API}/counter`, addObj);
@@ -166,9 +173,7 @@ const StopwatchManager = () => {
     } catch (error) {
       showError("Error while adding countdown timer");
       console.error("Error while adding countdown timer", error);
-      setTimers((prev) => prev);
     }
-    setLoading(false);
     setTimerName("");
     setInitialSeconds("");
   };
@@ -179,7 +184,7 @@ const StopwatchManager = () => {
   return (
     <div>
       <h1>Stopwatch Manager</h1>
-      {loading && (
+      {counterNetworkState === "loading" && (
         <div className="overlay">
           <div className="spinner"></div>
         </div>
@@ -216,7 +221,6 @@ const StopwatchManager = () => {
           timerName={timer.timerName}
           timeElapsedFromBeginning={timer.timeElapsedFromBeginning || 0}
           onRemove={(id) => handleRemoveTimer(id)}
-          setLoading={(isLoading) => setLoading(isLoading)}
         />
       ))}
     </div>

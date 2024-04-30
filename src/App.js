@@ -16,7 +16,7 @@ const App = () => {
 
   return (
     <div className="App">
-      <div class="menu-bar">
+      <div className="menu-bar">
         <ul>
           <li>
             <a href="/">Home</a>
